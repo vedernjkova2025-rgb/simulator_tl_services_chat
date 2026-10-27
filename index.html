@@ -1,0 +1,1500 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; base-uri 'none'; object-src 'none'; frame-src 'none'; worker-src 'none'; connect-src 'none'; img-src data: blob:; media-src data: blob:; font-src data:; style-src 'unsafe-inline'; script-src 'unsafe-inline'; form-action 'none'">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Диалоговый тренажер: Витрина услуг (TL: Services)</title>
+  <style>
+    :root {
+      --accent-color: #227BDD;
+      --accent-hover: #1b63b2;
+      --accent-light: #eaf2fc;
+      --accent-glow: rgba(34, 123, 221, 0.35);
+      --bg-page: #ffffff;
+      --chat-bg: #f8fafc;
+      --text-main: #1e293b;
+      --text-muted: #64748b;
+      --border-color: #e2e8f0;
+      --success-color: #10b981;
+      --success-light: #ecfdf5;
+      --success-border: #a7f3d0;
+      --danger-color: #ef4444;
+      --danger-light: #fef2f2;
+      --danger-border: #fecaca;
+      --recording-color: #ef4444;
+      --recording-glow: rgba(239, 68, 68, 0.4);
+      --font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: var(--bg-page);
+      font-family: var(--font-family);
+      color: var(--text-main);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      padding: 16px;
+    }
+
+    .simulator-container {
+      width: 100%;
+      max-width: 820px;
+      height: 90vh;
+      max-height: 840px;
+      background: #ffffff;
+      border: 1px solid var(--border-color);
+      border-radius: 16px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.06);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      position: relative;
+    }
+
+    /* Header */
+    .chat-header {
+      padding: 16px 24px;
+      background: #ffffff;
+      border-bottom: 1px solid var(--border-color);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      z-index: 5;
+    }
+
+    .header-user-info {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .avatar-wrapper {
+      position: relative;
+      width: 46px;
+      height: 46px;
+      border-radius: 50%;
+      background: var(--accent-light);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--accent-color);
+      flex-shrink: 0;
+    }
+
+    .avatar-wrapper svg {
+      width: 26px;
+      height: 26px;
+    }
+
+    .online-badge {
+      position: absolute;
+      bottom: 2px;
+      right: 2px;
+      width: 11px;
+      height: 11px;
+      background-color: var(--success-color);
+      border: 2px solid #ffffff;
+      border-radius: 50%;
+    }
+
+    .header-text h2 {
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--text-main);
+      line-height: 1.2;
+    }
+
+    .header-text p {
+      font-size: 13px;
+      color: var(--text-muted);
+      margin-top: 2px;
+    }
+
+    .progress-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 12px;
+      background: var(--accent-light);
+      color: var(--accent-color);
+      font-size: 13px;
+      font-weight: 600;
+      border-radius: 20px;
+      white-space: nowrap;
+    }
+
+    /* Chat Messages Area */
+    .chat-body {
+      flex: 1;
+      overflow-y: auto;
+      padding: 24px;
+      background-color: var(--chat-bg);
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+      scroll-behavior: smooth;
+    }
+
+    .message-row {
+      display: flex;
+      flex-direction: column;
+      max-width: 86%;
+      animation: fadeIn 0.3s ease-out;
+    }
+
+    .message-row.incoming {
+      align-self: flex-start;
+    }
+
+    .message-row.outgoing {
+      align-self: flex-end;
+    }
+
+    .message-sender {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-muted);
+      margin-bottom: 5px;
+      padding-left: 2px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .audio-badge-tag {
+      font-size: 11px;
+      padding: 1px 6px;
+      background: #f1f5f9;
+      color: var(--accent-color);
+      border-radius: 4px;
+      display: inline-flex;
+      align-items: center;
+      gap: 3px;
+    }
+
+    .audio-badge-tag svg {
+      width: 12px;
+      height: 12px;
+    }
+
+    .message-bubble {
+      padding: 14px 18px;
+      font-size: 14.5px;
+      line-height: 1.5;
+      border-radius: 14px;
+      position: relative;
+      word-break: break-word;
+    }
+
+    .incoming .message-bubble {
+      background: #ffffff;
+      color: var(--text-main);
+      border: 1px solid var(--border-color);
+      border-top-left-radius: 4px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.03);
+    }
+
+    .outgoing .message-bubble {
+      background: var(--accent-color);
+      color: #ffffff;
+      border-top-right-radius: 4px;
+      box-shadow: 0 4px 12px var(--accent-glow);
+    }
+
+    .context-tag {
+      display: inline-block;
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: var(--accent-color);
+      margin-bottom: 6px;
+    }
+
+    /* Feedback Card in Chat */
+    .feedback-card {
+      margin-top: 10px;
+      padding: 16px 18px;
+      border-radius: 12px;
+      font-size: 14px;
+      line-height: 1.5;
+      animation: slideUp 0.35s ease-out;
+    }
+
+    .feedback-card.success {
+      background-color: var(--success-light);
+      border: 1px solid var(--success-border);
+      color: #065f46;
+    }
+
+    .feedback-card.error {
+      background-color: var(--danger-light);
+      border: 1px solid var(--danger-border);
+      color: #991b1b;
+    }
+
+    .feedback-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-weight: 700;
+      font-size: 15px;
+      margin-bottom: 8px;
+    }
+
+    .feedback-header svg {
+      width: 20px;
+      height: 20px;
+      flex-shrink: 0;
+    }
+
+    .benchmark-title {
+      font-weight: 700;
+      margin-top: 12px;
+      margin-bottom: 4px;
+      color: var(--text-main);
+      font-size: 13px;
+      text-transform: uppercase;
+      letter-spacing: 0.4px;
+    }
+
+    .benchmark-quote {
+      background: rgba(255, 255, 255, 0.85);
+      padding: 12px 14px;
+      border-radius: 8px;
+      font-size: 13.5px;
+      color: var(--text-main);
+      border-left: 3px solid var(--accent-color);
+      margin-top: 6px;
+      line-height: 1.5;
+    }
+
+    .next-step-actions {
+      display: flex;
+      gap: 10px;
+      margin-top: 14px;
+    }
+
+    .action-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 18px;
+      font-size: 14px;
+      font-weight: 600;
+      border-radius: 8px;
+      cursor: pointer;
+      border: none;
+      transition: all 0.2s ease;
+    }
+
+    .action-btn.primary {
+      background: var(--accent-color);
+      color: #ffffff;
+      box-shadow: 0 4px 10px var(--accent-glow);
+    }
+
+    .action-btn.primary:hover {
+      background: var(--accent-hover);
+      transform: translateY(-1px);
+    }
+
+    .action-btn.secondary {
+      background: #ffffff;
+      color: var(--text-main);
+      border: 1px solid var(--border-color);
+    }
+
+    .action-btn.secondary:hover {
+      background: #f1f5f9;
+    }
+
+    /* Typing indicator */
+    .typing-indicator {
+      display: none;
+      align-items: center;
+      gap: 5px;
+      padding: 12px 16px;
+      background: #ffffff;
+      border: 1px solid var(--border-color);
+      border-radius: 14px;
+      width: fit-content;
+      margin-bottom: 6px;
+    }
+
+    .typing-dot {
+      width: 7px;
+      height: 7px;
+      background: var(--accent-color);
+      border-radius: 50%;
+      animation: typingBounce 1.4s infinite ease-in-out both;
+    }
+
+    .typing-dot:nth-child(1) { animation-delay: -0.32s; }
+    .typing-dot:nth-child(2) { animation-delay: -0.16s; }
+
+    @keyframes typingBounce {
+      0%, 80%, 100% { transform: scale(0); opacity: 0.4; }
+      40% { transform: scale(1); opacity: 1; }
+    }
+
+    /* Chat Footer (Input Area) */
+    .chat-footer {
+      padding: 14px 20px 16px;
+      background: #ffffff;
+      border-top: 1px solid var(--border-color);
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    /* Voice recording status bar */
+    .voice-status-bar {
+      display: none;
+      align-items: center;
+      justify-content: space-between;
+      background: #fee2e2;
+      border: 1px solid #fca5a5;
+      padding: 8px 14px;
+      border-radius: 8px;
+      font-size: 13px;
+      color: #b91c1c;
+      animation: fadeIn 0.2s ease;
+    }
+
+    .voice-status-bar.visible {
+      display: flex;
+    }
+
+    .voice-status-left {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-weight: 600;
+    }
+
+    .sound-wave {
+      display: flex;
+      align-items: center;
+      gap: 3px;
+      height: 16px;
+    }
+
+    .sound-bar {
+      width: 3px;
+      background: #ef4444;
+      border-radius: 2px;
+      animation: wave 1s infinite ease-in-out;
+    }
+
+    .sound-bar:nth-child(1) { height: 6px; animation-delay: 0.1s; }
+    .sound-bar:nth-child(2) { height: 14px; animation-delay: 0.3s; }
+    .sound-bar:nth-child(3) { height: 10px; animation-delay: 0.2s; }
+    .sound-bar:nth-child(4) { height: 16px; animation-delay: 0.4s; }
+    .sound-bar:nth-child(5) { height: 8px; animation-delay: 0.25s; }
+
+    @keyframes wave {
+      0%, 100% { transform: scaleY(0.4); }
+      50% { transform: scaleY(1); }
+    }
+
+    .stop-record-text-btn {
+      background: transparent;
+      border: none;
+      color: #b91c1c;
+      font-weight: 700;
+      text-decoration: underline;
+      cursor: pointer;
+      font-size: 12.5px;
+    }
+
+    .input-wrapper {
+      position: relative;
+      display: flex;
+      align-items: flex-end;
+      gap: 8px;
+      background: #ffffff;
+      border: 2px solid var(--border-color);
+      border-radius: 12px;
+      padding: 8px 12px;
+      transition: all 0.25s ease;
+    }
+
+    /* Pulse active border */
+    .input-wrapper.active-pulse {
+      border-color: var(--accent-color);
+      box-shadow: 0 0 0 4px var(--accent-glow);
+      animation: pulseBorder 2s infinite ease-in-out;
+    }
+
+    .input-wrapper.recording-pulse {
+      border-color: var(--recording-color);
+      box-shadow: 0 0 0 4px var(--recording-glow);
+      animation: pulseBorderRed 1.4s infinite ease-in-out;
+    }
+
+    @keyframes pulseBorder {
+      0% { box-shadow: 0 0 0 0 rgba(34, 123, 221, 0.4); }
+      50% { box-shadow: 0 0 0 6px rgba(34, 123, 221, 0); }
+      100% { box-shadow: 0 0 0 0 rgba(34, 123, 221, 0); }
+    }
+
+    @keyframes pulseBorderRed {
+      0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.5); }
+      50% { box-shadow: 0 0 0 6px rgba(239, 68, 68, 0); }
+      100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+    }
+
+    .chat-textarea {
+      flex: 1;
+      border: none;
+      outline: none;
+      resize: none;
+      font-family: inherit;
+      font-size: 14.5px;
+      line-height: 1.4;
+      color: var(--text-main);
+      max-height: 120px;
+      height: 48px;
+      background: transparent;
+      padding-top: 6px;
+    }
+
+    .chat-textarea::placeholder {
+      color: #94a3b8;
+    }
+
+    .input-action-buttons {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex-shrink: 0;
+    }
+
+    /* Voice mic button */
+    .mic-btn {
+      width: 40px;
+      height: 40px;
+      border-radius: 10px;
+      background: #f1f5f9;
+      color: #475569;
+      border: 1px solid var(--border-color);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      position: relative;
+    }
+
+    .mic-btn:hover:not(:disabled) {
+      background: #e2e8f0;
+      color: var(--text-main);
+    }
+
+    .mic-btn.recording {
+      background: var(--recording-color);
+      color: #ffffff;
+      border-color: var(--recording-color);
+      animation: pulseMic 1.2s infinite ease-in-out;
+    }
+
+    @keyframes pulseMic {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.08); }
+      100% { transform: scale(1); }
+    }
+
+    .mic-btn svg {
+      width: 20px;
+      height: 20px;
+    }
+
+    .send-btn {
+      width: 40px;
+      height: 40px;
+      border-radius: 10px;
+      background: var(--accent-color);
+      color: #ffffff;
+      border: none;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .send-btn:hover:not(:disabled) {
+      background: var(--accent-hover);
+      transform: translateY(-1px);
+    }
+
+    .send-btn:disabled, .mic-btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .send-btn svg {
+      width: 19px;
+      height: 19px;
+    }
+
+    .input-hint {
+      font-size: 12px;
+      color: var(--text-muted);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0 4px;
+    }
+
+    .mode-hints {
+      display: flex;
+      gap: 12px;
+    }
+
+    .mode-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      color: #475569;
+    }
+
+    /* Modal dialogs */
+    .modal-overlay {
+      position: absolute;
+      inset: 0;
+      background: rgba(15, 23, 42, 0.6);
+      backdrop-filter: blur(4px);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      z-index: 100;
+      animation: fadeIn 0.25s ease;
+    }
+
+    .modal-card {
+      background: #ffffff;
+      border-radius: 18px;
+      padding: 32px 28px;
+      max-width: 490px;
+      width: 100%;
+      text-align: center;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+      animation: scaleUp 0.25s ease;
+    }
+
+    .modal-icon {
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 18px;
+    }
+
+    .modal-icon.success {
+      background: var(--success-light);
+      color: var(--success-color);
+    }
+
+    .modal-icon.warning {
+      background: #fff7ed;
+      color: #ea580c;
+    }
+
+    .modal-icon svg {
+      width: 32px;
+      height: 32px;
+    }
+
+    .modal-card h3 {
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--text-main);
+      margin-bottom: 10px;
+    }
+
+    .modal-card p {
+      font-size: 14.5px;
+      color: var(--text-muted);
+      line-height: 1.5;
+      margin-bottom: 22px;
+      text-align: left;
+    }
+
+    .instruction-steps {
+      background: #f8fafc;
+      border: 1px solid var(--border-color);
+      border-radius: 10px;
+      padding: 12px 16px;
+      margin-bottom: 22px;
+      text-align: left;
+      font-size: 13.5px;
+      line-height: 1.6;
+      color: var(--text-main);
+    }
+
+    .instruction-steps ol {
+      padding-left: 18px;
+    }
+
+    .instruction-steps li {
+      margin-bottom: 6px;
+    }
+
+    .modal-buttons-row {
+      display: flex;
+      gap: 10px;
+    }
+
+    .reset-btn {
+      width: 100%;
+      padding: 13px 20px;
+      background: var(--accent-color);
+      color: #ffffff;
+      font-size: 15px;
+      font-weight: 600;
+      border-radius: 10px;
+      border: none;
+      cursor: pointer;
+      box-shadow: 0 4px 12px var(--accent-glow);
+      transition: all 0.2s ease;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    .reset-btn:hover {
+      background: var(--accent-hover);
+      transform: translateY(-1px);
+    }
+
+    .reset-btn svg {
+      width: 18px;
+      height: 18px;
+    }
+
+    /* Notification toast */
+    .toast-msg {
+      position: absolute;
+      top: 18px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: #1e293b;
+      color: #ffffff;
+      padding: 10px 18px;
+      border-radius: 8px;
+      font-size: 13px;
+      box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+      z-index: 50;
+      display: none;
+      align-items: center;
+      gap: 8px;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
+    @keyframes scaleUp {
+      from { transform: scale(0.92); opacity: 0; }
+      to { transform: scale(1); opacity: 1; }
+    }
+
+    @keyframes slideUp {
+      from { transform: translateY(12px); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="simulator-container">
+    <!-- Toast message -->
+    <div class="toast-msg" id="toastMsg">
+      <span id="toastText">Уведомление</span>
+    </div>
+
+    <!-- Chat Header -->
+    <header class="chat-header">
+      <div class="header-user-info">
+        <div class="avatar-wrapper" id="clientAvatar">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+            <circle cx="12" cy="7" r="4"></circle>
+          </svg>
+          <span class="online-badge"></span>
+        </div>
+        <div class="header-text">
+          <h2 id="clientName">Отельер</h2>
+          <p id="clientRole">Загородный отель</p>
+        </div>
+      </div>
+      <div class="progress-pill">
+        <span id="caseStep">Кейс 1 из 4</span>
+      </div>
+    </header>
+
+    <!-- Chat Messages -->
+    <main class="chat-body" id="chatBody">
+      <!-- Dynamically filled -->
+    </main>
+
+    <!-- Typing Indicator -->
+    <div class="typing-indicator" id="typingIndicator">
+      <div class="typing-dot"></div>
+      <div class="typing-dot"></div>
+      <div class="typing-dot"></div>
+    </div>
+
+    <!-- Chat Input Footer -->
+    <footer class="chat-footer">
+      <!-- Voice recording status -->
+      <div class="voice-status-bar" id="voiceStatusBar">
+        <div class="voice-status-left">
+          <div class="sound-wave">
+            <div class="sound-bar"></div>
+            <div class="sound-bar"></div>
+            <div class="sound-bar"></div>
+            <div class="sound-bar"></div>
+            <div class="sound-bar"></div>
+          </div>
+          <span>Идет запись голоса... Говорите ответ</span>
+        </div>
+        <button class="stop-record-text-btn" id="stopRecordBtn">Завершить запись</button>
+      </div>
+
+      <div class="input-wrapper active-pulse" id="inputWrapper">
+        <textarea 
+          class="chat-textarea" 
+          id="userInput" 
+          placeholder="Ответьте текстом или нажмите на микрофон для ответа голосом..." 
+          rows="2"
+        ></textarea>
+        
+        <div class="input-action-buttons">
+          <!-- Mic button -->
+          <button class="mic-btn" id="micBtn" title="Ответить голосом (нажмите для записи)">
+            <svg id="micIconNormal" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path>
+              <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
+              <line x1="12" y1="19" x2="12" y2="23"></line>
+              <line x1="8" y1="23" x2="16" y2="23"></line>
+            </svg>
+            <svg id="micIconRecording" style="display:none;" viewBox="0 0 24 24" fill="currentColor">
+              <rect x="6" y="6" width="12" height="12" rx="2"></rect>
+            </svg>
+          </button>
+
+          <!-- Send text button -->
+          <button class="send-btn" id="sendBtn" title="Отправить ответ">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="22" y1="2" x2="11" y2="13"></line>
+              <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+            </svg>
+          </button>
+        </div>
+      </div>
+
+      <div class="input-hint">
+        <div class="mode-hints">
+          <span class="mode-badge">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path><path d="M19 10v2a7 7 0 0 1-14 0v-2"></path></svg>
+            Голос
+          </span>
+          <span class="mode-badge">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="4" width="20" height="16" rx="2"></rect><path d="M6 8h.001M10 8h.001M14 8h.001M18 8h.001M8 12h8M6 16h12"></path></svg>
+            Текст (Enter)
+          </span>
+        </div>
+        <span id="charCount">0 знаков</span>
+      </div>
+    </footer>
+
+    <!-- Modal Permission Guide -->
+    <div class="modal-overlay" id="modalPermission">
+      <div class="modal-card">
+        <div class="modal-icon warning">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path>
+            <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
+            <line x1="1" y1="1" x2="23" y2="23"></line>
+          </svg>
+        </div>
+        <h3>Как включить микрофон</h3>
+        <p>Браузер ограничил доступ к микрофону для этой страницы. Чтобы отвечать голосом:</p>
+        
+        <div class="instruction-steps">
+          <ol>
+            <li>Нажмите на <b>значок настроек или замочка</b> слева в адресной строке браузера.</li>
+            <li>Найдите пункт <b>«Микрофон»</b> и переключите его в положение <b>«Разрешить»</b>.</li>
+            <li>Если файл открыт локально с диска (<code>file://</code>), Chrome блокирует микрофон по политике безопасности. В СДО по ссылке <code>https://</code> он будет работать штатно.</li>
+          </ol>
+        </div>
+
+        <button class="reset-btn" id="closePermissionModalBtn">
+          Понятно, отвечу текстом
+        </button>
+      </div>
+    </div>
+
+    <!-- Modal Completed -->
+    <div class="modal-overlay" id="modalCompleted">
+      <div class="modal-card">
+        <div class="modal-icon success">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="20 6 9 17 4 12"></polyline>
+          </svg>
+        </div>
+        <h3>Все кейсы разобраны!</h3>
+        <p style="text-align: center;">Вы успешно отработали 4 сложных клиентских возражения по модулю <b>TL: Services (Витрина услуг)</b> и закрепили правильные аргументы без методических ошибок.</p>
+        <button class="reset-btn" id="resetBtn">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"></path>
+            <path d="M21 3v5h-5"></path>
+            <path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"></path>
+            <path d="M3 21v-5h5"></path>
+          </svg>
+          Тренажер завершен. Пройти заново
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Кейсы тренажера
+    const casesData = [
+      {
+        id: 1,
+        title: "Кейс 1. Сомнение в пользе витрины",
+        clientName: "Андрей Викторович",
+        clientRole: "Управляющий загородного парк-отеля",
+        incomingMessage: "Зачем нам еще какая-то витрина? У нас на сайте в форме бронирования уже добавлены и баня, и чан, и аренда беседок. Кому надо — купят там при выборе номера.",
+        validate: function(text) {
+          const lower = text.toLowerCase();
+          
+          if (/(озон|ozon|маркетплейс|устарел|замен)/.test(lower)) {
+            return {
+              passed: false,
+              type: "taboo",
+              title: "Нарушение главного табу",
+              comment: "Витрина — не маркетплейс и не замена модулю, а простой каталог допродажи. Пообещав витрину «как на Ozon» или сказав, что модуль устарел, вы разочаруете клиента и обесцените модуль бронирования."
+            };
+          }
+          if (/(100%|обязательн.*онлайн|только.*онлайн|нельзя.*в отел)/.test(lower)) {
+            return {
+              passed: false,
+              type: "taboo",
+              title: "Фактическая ошибка",
+              comment: "На витрине не требуется строго обязательная 100% предоплата. Для гостей с проживанием доступна оплата при заселении в отеле."
+            };
+          }
+
+          const hasGuestPsychology = /(фокус|пропуск|датах|номер|выбор|гост.*не готов|сразу)/.test(lower);
+          const hasCatchUp = /(догон|письм|ваучер|позже|перед заезд|за пару дн|планирова)/.test(lower);
+          const hasAddon = /(не заменя|дополн|втор.*шанс|отдельн)/.test(lower);
+
+          if ((hasGuestPsychology && hasCatchUp) || (hasCatchUp && hasAddon) || (hasGuestPsychology && hasAddon)) {
+            return {
+              passed: true,
+              type: "success",
+              title: "Отличный ответ! Смысл передан точно",
+              comment: "Вы верно показали психологию гостя: при покупке номера он еще не готов заказывать баню, а витрина догоняет его позже в письме или ваучере."
+            };
+          }
+
+          if (lower.length < 25) {
+            return {
+              passed: false,
+              type: "weak",
+              title: "Ответ слишком краток",
+              comment: "Попробуйте раскрыть аргумент подробнее: почему гость не заказывает баню в модуле бронирования и как именно витрина помогает его «догнать»?"
+            };
+          }
+
+          return {
+            passed: false,
+            type: "weak",
+            title: "Мысль не до конца раскрыта",
+            comment: "Важно подчеркнуть, что при бронировании гость занят выбором дат и номера и пропускает услуги. А витрина предлагает услуги позже — в ваучере и письме перед заездом."
+          };
+        },
+        benchmark: "«При бронировании номера гость сфокусирован на датах и категории — большинство просто пропускают шаг услуг. Витрина не заменяет форму, а догоняет гостя: предлагает баню в ваучере и письме за пару дней до заезда, когда он уже готов планировать отдых»."
+      },
+      {
+        id: 2,
+        title: "Кейс 2. Вопрос про питание и румсервис",
+        clientName: "Ирина Сергеевна",
+        clientRole: "Управляющая курортного спа-отеля",
+        incomingMessage: "Отлично, витрину подключим! А наши гости смогут через нее заказывать блюда из ресторана и напитки прямо в номер или к бассейну?",
+        validate: function(text) {
+          const lower = text.toLowerCase();
+
+          if (/(да,?\s*конечно|можно|созда.*блюд|почасов.*оплат.*блюд|кухн.*личный кабинет)/.test(lower)) {
+            return {
+              passed: false,
+              type: "taboo",
+              title: "Грубая методическая и техническая ошибка",
+              comment: "TL: Services не предназначен для ресторанного меню. Настройка доставки еды через почасовые ресурсы вызовет сбои на кухне отеля."
+            };
+          }
+          if (/(две недел|2 недел|скоро выйдет|в ближайшем обновлен|уже настраива)/.test(lower)) {
+            return {
+              passed: false,
+              type: "taboo",
+              title: "Ложное обещание по срокам",
+              comment: "Сроки по румсервису не определены, давать клиенту невыполнимые обещания о скором релизе категорически запрещено."
+            };
+          }
+
+          const hasDenial = /(нет|не предназнач|нельзя|не смогу|не поддержив|отсутств)/.test(lower);
+          const hasHourly = /(почасов|сеанс|спа|бан|прокат|беседк)/.test(lower);
+          const hasIntegration = /(интеграц|ресторан|кухн|отдельн)/.test(lower);
+
+          if (hasDenial && (hasHourly || hasIntegration)) {
+            return {
+              passed: true,
+              type: "success",
+              title: "В точку! Румсервис — строгое табу",
+              comment: "Вы четко обозначили границы продукта: витрина для почасовых слотов (бани, спа, беседки), а доставка еды требует отдельной интеграции с кухней."
+            };
+          }
+
+          if (lower.length < 20) {
+            return {
+              passed: false,
+              type: "weak",
+              title: "Слишком короткий ответ",
+              comment: "Обоснуйте ответ: поясните, для каких именно услуг создана витрина (почасовые ресурсы) и почему ресторанное меню требует другой системы."
+            };
+          }
+
+          return {
+            passed: false,
+            type: "weak",
+            title: "Не хватает четкости по функционалу",
+            comment: "Обязательно скажите отельеру «нет» по доставке еды и уточните, что витрина создана для почасовых услуг (спа, бани, беседки)."
+          };
+        },
+        benchmark: "«Нет, витрина предназначена для почасовых услуг: спа, бань, проката или аренды беседок. Доставка еды и румсервис требуют отдельной интеграции с ресторанной системой и кухней, в текущей витрине этого функционала нет»."
+      },
+      {
+        id: 3,
+        title: "Кейс 3. Страх холодной бани и внезапных заказов",
+        clientName: "Михаил Юрьевич",
+        clientRole: "Владелец загородного банного комплекса",
+        incomingMessage: "Мы сдаем русскую баню на дровах. Ее нужно топить минимум два с половиной часа. Если гость с витрины закажет баню \"на через 15 минут\", печь будет ледяная, а гость устроит скандал. Как нам от этого защититься?",
+        validate: function(text) {
+          const lower = text.toLowerCase();
+
+          if (/(звон.*гост|ручн.*стресс|просить перенест|следить за календар)/.test(lower)) {
+            return {
+              passed: false,
+              type: "taboo",
+              title: "Ошибочное решение",
+              comment: "Перекладывать контроль на администратора со звонками гостю гарантирует конфликт, ведь гость уже уверен, что забронировал и оплатил баню."
+            };
+          }
+          if (/(ручн.*подтвержд|отклон.*брон|администратор подтвержд)/.test(lower)) {
+            return {
+              passed: false,
+              type: "taboo",
+              title: "Фактическая ошибка",
+              comment: "Заказы на витрине не требуют ручного подтверждения: свободный слот мгновенно бронируется в календаре."
+            };
+          }
+
+          const hasLeadTime = /(упрежден|заран|не позднее|за 3 час|за 2|минимум за)/.test(lower);
+          const hasAutoHide = /(скро|автоматич|не покаж|не смож.*выбр|убер|недоступ)/.test(lower);
+
+          if (hasLeadTime && hasAutoHide) {
+            return {
+              passed: true,
+              type: "success",
+              title: "Отлично! Ключевая настройка названа",
+              comment: "Время упреждения заказа — именно тот инструмент автоматизации, который защищает отель от внезапных заказов без ручного стресса."
+            };
+          }
+
+          if (hasLeadTime || hasAutoHide) {
+            return {
+              passed: true,
+              type: "success",
+              title: "Верное направление мысли!",
+              comment: "Главное решение — настроить время упреждения (например, не менее чем за 3 часа), чтобы система сама исключала недоступные слоты."
+            };
+          }
+
+          if (lower.length < 20) {
+            return {
+              passed: false,
+              type: "weak",
+              title: "Слишком кратко",
+              comment: "Назовите отельеру конкретную настройку витрины, которая блокирует бронирование на ближайшие часы."
+            };
+          }
+
+          return {
+            passed: false,
+            type: "weak",
+            title: "Не назван главный механизм защиты",
+            comment: "Отельеру поможет настройка «время упреждения заказа» — она автоматически скрывает слоты на ближайшие часы (например, за 3 часа до начала)."
+          };
+        },
+        benchmark: "«В настройках карточки услуги укажите время упреждения: например, \"бронирование не позднее чем за 3 часа до начала\". Тогда система автоматически скроет ближайшие слоты, и гость сможет выбрать только то время, к которому вы гарантированно успеете протопить парную»."
+      },
+      {
+        id: 4,
+        title: "Кейс 4. Отмена онлайн-заказа и возврат денег",
+        clientName: "Елена Викторовна",
+        clientRole: "Главный бухгалтер базы отдыха",
+        incomingMessage: "Внешний посетитель забронировал беседку на субботу по ссылке в соцсетях и внес 100% предоплату картой. В пятницу вечером он позвонил и отказался от брони. Что произойдет с деньгами и вашей комиссией?",
+        validate: function(text) {
+          const lower = text.toLowerCase();
+
+          if (/(автоматическ.*верн|в ту же секунд|автоматическ.*на карт)/.test(lower)) {
+            return {
+              passed: false,
+              type: "taboo",
+              title: "Критическая ошибка",
+              comment: "При отмене услуг автоматического возврата денег нет — это сделано специально для финансовой защиты отеля, чтобы он мог удержать штраф по своим правилам."
+            };
+          }
+          if (/(не возвращ.*ни при каких|невозвратн|вообще нельз.*верн)/.test(lower)) {
+            return {
+              passed: false,
+              type: "taboo",
+              title: "Фактическая ошибка",
+              comment: "Техническая возможность вернуть средства гостю есть всегда в личном кабинете Order Manager (МУЗ)."
+            };
+          }
+          if (/(комисси.*спишется в полном|комисси.*взимается)/.test(lower) && !/(не взима|не начисля|защищ)/.test(lower)) {
+            return {
+              passed: false,
+              type: "taboo",
+              title: "Ошибка по комиссии",
+              comment: "За отмененный заказ комиссия TravelLine не начисляется, если статус «Отменен» проставлен в системе."
+            };
+          }
+
+          const hasCancelStatus = /(статус.*отмен|отмен.*в календар|комисси.*не)/.test(lower);
+          const hasManualRefund = /(вручн|order manager|платежн.*кабинет|муз|правил.*отел|возврат)/.test(lower);
+
+          if (hasCancelStatus && hasManualRefund) {
+            return {
+              passed: true,
+              type: "success",
+              title: "Великолепный ответ! Полная финансовая точность",
+              comment: "Вы точно разделили два процесса: перевод в «Отменен» защищает отель от комиссии TravelLine, а ручной возврат в Order Manager сохраняет контроль над штрафами."
+            };
+          }
+
+          if (hasCancelStatus || hasManualRefund) {
+            return {
+              passed: true,
+              type: "success",
+              title: "Верно по сути!",
+              comment: "Главное передано: отмена в календаре снимает комиссию TL, а возврат средств на карту отель проводит вручную в кабинете Order Manager по своим правилам."
+            };
+          }
+
+          if (lower.length < 25) {
+            return {
+              passed: false,
+              type: "weak",
+              title: "Неполный ответ",
+              comment: "Ответьте на оба вопроса бухгалтера: что станет с комиссией TravelLine и как именно возвращаются деньги гостю?"
+            };
+          }
+
+          return {
+            passed: false,
+            type: "weak",
+            title: "Уточните процедуру отмены",
+            comment: "Отель переводит заказ в статус «Отменен» в календаре (комиссия TL не начисляется), а возврат денег проводит вручную в кабинете Order Manager по своим правилам."
+          };
+        },
+        benchmark: "«Вы переводите заказ в статус \"Отменен\" в календаре — слот сразу открывается для других гостей, а комиссия TravelLine за него не начисляется. Возврат денег на карту гостя вы проводите вручную в кабинете TL: Order Manager по правилам вашего отеля»."
+      }
+    ];
+
+    // State
+    let currentCaseIndex = 0;
+    let isWaitingAnswer = true;
+    let isRecording = false;
+    let speechRecognitionInstance = null;
+    let wasVoiceSubmitted = false;
+
+    // DOM Elements
+    const chatBody = document.getElementById("chatBody");
+    const userInput = document.getElementById("userInput");
+    const sendBtn = document.getElementById("sendBtn");
+    const micBtn = document.getElementById("micBtn");
+    const micIconNormal = document.getElementById("micIconNormal");
+    const micIconRecording = document.getElementById("micIconRecording");
+    const voiceStatusBar = document.getElementById("voiceStatusBar");
+    const stopRecordBtn = document.getElementById("stopRecordBtn");
+    const inputWrapper = document.getElementById("inputWrapper");
+    const charCount = document.getElementById("charCount");
+    const clientNameEl = document.getElementById("clientName");
+    const clientRoleEl = document.getElementById("clientRole");
+    const caseStepEl = document.getElementById("caseStep");
+    const typingIndicator = document.getElementById("typingIndicator");
+    const modalCompleted = document.getElementById("modalCompleted");
+    const resetBtn = document.getElementById("resetBtn");
+    const modalPermission = document.getElementById("modalPermission");
+    const closePermissionModalBtn = document.getElementById("closePermissionModalBtn");
+    const toastMsg = document.getElementById("toastMsg");
+    const toastText = document.getElementById("toastText");
+
+    // Инициализация Web Speech API
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+
+    function initSpeechEngine() {
+      if (!SpeechRecognition) return null;
+
+      const recognition = new SpeechRecognition();
+      recognition.lang = 'ru-RU';
+      recognition.continuous = true;
+      recognition.interimResults = true;
+
+      recognition.onstart = function() {
+        isRecording = true;
+        wasVoiceSubmitted = true;
+        micBtn.classList.add("recording");
+        micIconNormal.style.display = "none";
+        micIconRecording.style.display = "block";
+        voiceStatusBar.classList.add("visible");
+        inputWrapper.classList.remove("active-pulse");
+        inputWrapper.classList.add("recording-pulse");
+      };
+
+      recognition.onresult = function(event) {
+        let transcript = "";
+        for (let i = 0; i < event.results.length; ++i) {
+          transcript += event.results[i][0].transcript;
+        }
+        userInput.value = transcript;
+        updateCharCount();
+      };
+
+      recognition.onerror = function(event) {
+        stopVoiceRecognition();
+        if (event.error === 'not-allowed') {
+          showPermissionModal();
+        } else if (event.error !== 'no-speech') {
+          showToast("Ошибка распознавания: " + event.error);
+        }
+      };
+
+      recognition.onend = function() {
+        stopVoiceRecognition();
+      };
+
+      return recognition;
+    }
+
+    async function toggleVoiceRecognition() {
+      if (!SpeechRecognition) {
+        showToast("Голосовой ввод не поддерживается данным браузером. Используйте текст.");
+        userInput.focus();
+        return;
+      }
+
+      if (isRecording) {
+        if (speechRecognitionInstance) {
+          speechRecognitionInstance.stop();
+        }
+        stopVoiceRecognition();
+        return;
+      }
+
+      // Если страница открыта через file:// браузер блокирует микрофон
+      if (window.location.protocol === 'file:') {
+        showPermissionModal();
+        return;
+      }
+
+      // Явный запрос разрешения через getUserMedia
+      if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+        try {
+          const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+          stream.getTracks().forEach(track => track.stop());
+        } catch (err) {
+          showPermissionModal();
+          return;
+        }
+      }
+
+      try {
+        if (!speechRecognitionInstance) {
+          speechRecognitionInstance = initSpeechEngine();
+        }
+        speechRecognitionInstance.start();
+      } catch (e) {
+        if (e.name === 'NotAllowedError') {
+          showPermissionModal();
+        } else {
+          showToast("Ошибка запуска микрофона: " + e.message);
+        }
+      }
+    }
+
+    function stopVoiceRecognition() {
+      isRecording = false;
+      micBtn.classList.remove("recording");
+      micIconNormal.style.display = "block";
+      micIconRecording.style.display = "none";
+      voiceStatusBar.classList.remove("visible");
+      inputWrapper.classList.remove("recording-pulse");
+      if (isWaitingAnswer) {
+        inputWrapper.classList.add("active-pulse");
+      }
+    }
+
+    function showPermissionModal() {
+      modalPermission.style.display = "flex";
+    }
+
+    function showToast(text) {
+      toastText.textContent = text;
+      toastMsg.style.display = "flex";
+      setTimeout(() => {
+        toastMsg.style.display = "none";
+      }, 4000);
+    }
+
+    // Инициализация кейса
+    function loadCase(index) {
+      currentCaseIndex = index;
+      isWaitingAnswer = true;
+      wasVoiceSubmitted = false;
+
+      const c = casesData[index];
+      clientNameEl.textContent = c.clientName;
+      clientRoleEl.textContent = c.clientRole;
+      caseStepEl.textContent = `Кейс ${index + 1} из ${casesData.length}`;
+
+      chatBody.innerHTML = "";
+
+      // Сообщение клиента
+      appendMessage({
+        sender: c.clientName,
+        text: c.incomingMessage,
+        tag: c.title,
+        type: "incoming"
+      });
+
+      // Сброс поля ввода
+      userInput.value = "";
+      userInput.disabled = false;
+      sendBtn.disabled = false;
+      micBtn.disabled = false;
+      inputWrapper.classList.add("active-pulse");
+      updateCharCount();
+      setTimeout(() => userInput.focus(), 300);
+    }
+
+    // Добавление сообщения в чат
+    function appendMessage({ sender, text, tag, type, isVoice }) {
+      const row = document.createElement("div");
+      row.className = `message-row ${type}`;
+
+      let html = "";
+      if (sender) {
+        html += `<div class="message-sender">${escapeHtml(sender)}`;
+        if (isVoice) {
+          html += ` <span class="audio-badge-tag"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path><path d="M19 10v2a7 7 0 0 1-14 0v-2"></path></svg>Голосовой ответ</span>`;
+        }
+        html += `</div>`;
+      }
+      html += `<div class="message-bubble">`;
+      if (tag) {
+        html += `<div class="context-tag">${escapeHtml(tag)}</div>`;
+      }
+      html += `<div>${escapeHtml(text)}</div>`;
+      html += `</div>`;
+
+      row.innerHTML = html;
+      chatBody.appendChild(row);
+      scrollToBottom();
+    }
+
+    // Добавление карточки обратной связи
+    function appendFeedback(evalResult, currentCase) {
+      const card = document.createElement("div");
+      card.className = `feedback-card ${evalResult.passed ? 'success' : 'error'}`;
+
+      const iconSvg = evalResult.passed
+        ? `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>`
+        : `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"></polyline><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>`;
+
+      let nextBtnText = (currentCaseIndex < casesData.length - 1) ? "Следующий кейс" : "Завершить тренажер";
+      let retryBtnHtml = !evalResult.passed ? `<button class="action-btn secondary" id="retryBtn">Сформулировать иначе</button>` : "";
+
+      card.innerHTML = `
+        <div class="feedback-header">
+          ${iconSvg}
+          <span>${escapeHtml(evalResult.title)}</span>
+        </div>
+        <div>${escapeHtml(evalResult.comment)}</div>
+        <div class="benchmark-title">Эталонный ответ эксперта TravelLine:</div>
+        <div class="benchmark-quote">${escapeHtml(currentCase.benchmark)}</div>
+        <div class="next-step-actions">
+          ${retryBtnHtml}
+          <button class="action-btn primary" id="nextCaseBtn">${nextBtnText} →</button>
+        </div>
+      `;
+
+      chatBody.appendChild(card);
+      scrollToBottom();
+
+      // Слушатели кнопок
+      document.getElementById("nextCaseBtn").addEventListener("click", () => {
+        if (currentCaseIndex < casesData.length - 1) {
+          loadCase(currentCaseIndex + 1);
+        } else {
+          showCompletionModal();
+        }
+      });
+
+      const retryBtn = document.getElementById("retryBtn");
+      if (retryBtn) {
+        retryBtn.addEventListener("click", () => {
+          card.remove();
+          const outRows = chatBody.querySelectorAll(".message-row.outgoing");
+          if (outRows.length > 0) {
+            outRows[outRows.length - 1].remove();
+          }
+          userInput.disabled = false;
+          sendBtn.disabled = false;
+          micBtn.disabled = false;
+          inputWrapper.classList.add("active-pulse");
+          isWaitingAnswer = true;
+          userInput.focus();
+        });
+      }
+    }
+
+    // Отправка ответа пользователем
+    function handleSend() {
+      if (!isWaitingAnswer) return;
+
+      if (isRecording) {
+        if (speechRecognitionInstance) {
+          speechRecognitionInstance.stop();
+        }
+        stopVoiceRecognition();
+      }
+
+      const text = userInput.value.trim();
+      if (!text) {
+        showToast("Пожалуйста, назовите ответ в микрофон или напишите текстом");
+        userInput.focus();
+        return;
+      }
+
+      isWaitingAnswer = false;
+      userInput.disabled = true;
+      sendBtn.disabled = true;
+      micBtn.disabled = true;
+      inputWrapper.classList.remove("active-pulse");
+
+      // Сообщение пользователя
+      appendMessage({
+        sender: "Вы (Специалист)",
+        text: text,
+        type: "outgoing",
+        isVoice: wasVoiceSubmitted
+      });
+
+      // Индикатор печати собеседника
+      typingIndicator.style.display = "flex";
+      chatBody.appendChild(typingIndicator);
+      scrollToBottom();
+
+      const currentCase = casesData[currentCaseIndex];
+      const evalResult = currentCase.validate(text);
+
+      setTimeout(() => {
+        typingIndicator.style.display = "none";
+        appendFeedback(evalResult, currentCase);
+      }, 700);
+    }
+
+    function showCompletionModal() {
+      modalCompleted.style.display = "flex";
+    }
+
+    function resetSimulator() {
+      modalCompleted.style.display = "none";
+      loadCase(0);
+    }
+
+    function scrollToBottom() {
+      chatBody.scrollTop = chatBody.scrollHeight;
+    }
+
+    function updateCharCount() {
+      charCount.textContent = `${userInput.value.length} знаков`;
+    }
+
+    function escapeHtml(string) {
+      const div = document.createElement("div");
+      div.textContent = string;
+      return div.innerHTML;
+    }
+
+    // Слушатели событий
+    sendBtn.addEventListener("click", handleSend);
+
+    micBtn.addEventListener("click", toggleVoiceRecognition);
+    stopRecordBtn.addEventListener("click", () => {
+      if (speechRecognitionInstance) {
+        speechRecognitionInstance.stop();
+      }
+      stopVoiceRecognition();
+    });
+
+    closePermissionModalBtn.addEventListener("click", () => {
+      modalPermission.style.display = "none";
+      userInput.focus();
+    });
+
+    userInput.addEventListener("keydown", (e) => {
+      if (e.key === "Enter" && !e.shiftKey) {
+        e.preventDefault();
+        handleSend();
+      }
+    });
+
+    userInput.addEventListener("input", () => {
+      wasVoiceSubmitted = false;
+      updateCharCount();
+    });
+
+    resetBtn.addEventListener("click", resetSimulator);
+
+    // Инициализация при загрузке
+    speechRecognitionInstance = initSpeechEngine();
+    loadCase(0);
+  </script>
+</body>
+</html>

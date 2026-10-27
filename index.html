@@ -572,7 +572,7 @@
       color: #475569;
     }
 
-    /* Modal dialogs */
+    /* Modal Completion */
     .modal-overlay {
       position: absolute;
       inset: 0;
@@ -583,88 +583,54 @@
       justify-content: center;
       padding: 20px;
       z-index: 100;
-      animation: fadeIn 0.25s ease;
+      animation: fadeIn 0.3s ease;
     }
 
     .modal-card {
       background: #ffffff;
       border-radius: 18px;
-      padding: 32px 28px;
-      max-width: 490px;
+      padding: 36px 32px;
+      max-width: 480px;
       width: 100%;
       text-align: center;
       box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
-      animation: scaleUp 0.25s ease;
+      animation: scaleUp 0.3s ease;
     }
 
     .modal-icon {
-      width: 60px;
-      height: 60px;
+      width: 64px;
+      height: 64px;
       border-radius: 50%;
+      background: var(--success-light);
+      color: var(--success-color);
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      margin-bottom: 18px;
-    }
-
-    .modal-icon.success {
-      background: var(--success-light);
-      color: var(--success-color);
-    }
-
-    .modal-icon.warning {
-      background: #fff7ed;
-      color: #ea580c;
+      margin-bottom: 20px;
     }
 
     .modal-icon svg {
-      width: 32px;
-      height: 32px;
+      width: 36px;
+      height: 36px;
     }
 
     .modal-card h3 {
-      font-size: 20px;
+      font-size: 22px;
       font-weight: 700;
       color: var(--text-main);
       margin-bottom: 10px;
     }
 
     .modal-card p {
-      font-size: 14.5px;
+      font-size: 15px;
       color: var(--text-muted);
       line-height: 1.5;
-      margin-bottom: 22px;
-      text-align: left;
-    }
-
-    .instruction-steps {
-      background: #f8fafc;
-      border: 1px solid var(--border-color);
-      border-radius: 10px;
-      padding: 12px 16px;
-      margin-bottom: 22px;
-      text-align: left;
-      font-size: 13.5px;
-      line-height: 1.6;
-      color: var(--text-main);
-    }
-
-    .instruction-steps ol {
-      padding-left: 18px;
-    }
-
-    .instruction-steps li {
-      margin-bottom: 6px;
-    }
-
-    .modal-buttons-row {
-      display: flex;
-      gap: 10px;
+      margin-bottom: 26px;
     }
 
     .reset-btn {
       width: 100%;
-      padding: 13px 20px;
+      padding: 14px 20px;
       background: var(--accent-color);
       color: #ffffff;
       font-size: 15px;
@@ -677,7 +643,7 @@
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      gap: 8px;
+      gap: 10px;
     }
 
     .reset-btn:hover {
@@ -727,9 +693,9 @@
 <body>
 
   <div class="simulator-container">
-    <!-- Toast message -->
+    <!-- Toast message for mic errors -->
     <div class="toast-msg" id="toastMsg">
-      <span id="toastText">Уведомление</span>
+      <span id="toastText">Микрофон не подключен</span>
     </div>
 
     <!-- Chat Header -->
@@ -776,7 +742,7 @@
             <div class="sound-bar"></div>
             <div class="sound-bar"></div>
           </div>
-          <span>Идет запись голоса... Говорите ответ</span>
+          <span>Идет запись голоса... Говорите в микрофон</span>
         </div>
         <button class="stop-record-text-btn" id="stopRecordBtn">Завершить запись</button>
       </div>
@@ -785,7 +751,7 @@
         <textarea 
           class="chat-textarea" 
           id="userInput" 
-          placeholder="Ответьте текстом или нажмите на микрофон для ответа голосом..." 
+          placeholder="Ответьте текстом или нажмите на значок микрофона для ответа голосом..." 
           rows="2"
         ></textarea>
         
@@ -817,7 +783,7 @@
         <div class="mode-hints">
           <span class="mode-badge">
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path><path d="M19 10v2a7 7 0 0 1-14 0v-2"></path></svg>
-            Голос
+            Микрофон
           </span>
           <span class="mode-badge">
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="4" width="20" height="16" rx="2"></rect><path d="M6 8h.001M10 8h.001M14 8h.001M18 8h.001M8 12h8M6 16h12"></path></svg>
@@ -828,43 +794,16 @@
       </div>
     </footer>
 
-    <!-- Modal Permission Guide -->
-    <div class="modal-overlay" id="modalPermission">
-      <div class="modal-card">
-        <div class="modal-icon warning">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path>
-            <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
-            <line x1="1" y1="1" x2="23" y2="23"></line>
-          </svg>
-        </div>
-        <h3>Как включить микрофон</h3>
-        <p>Браузер ограничил доступ к микрофону для этой страницы. Чтобы отвечать голосом:</p>
-        
-        <div class="instruction-steps">
-          <ol>
-            <li>Нажмите на <b>значок настроек или замочка</b> слева в адресной строке браузера.</li>
-            <li>Найдите пункт <b>«Микрофон»</b> и переключите его в положение <b>«Разрешить»</b>.</li>
-            <li>Если файл открыт локально с диска (<code>file://</code>), Chrome блокирует микрофон по политике безопасности. В СДО по ссылке <code>https://</code> он будет работать штатно.</li>
-          </ol>
-        </div>
-
-        <button class="reset-btn" id="closePermissionModalBtn">
-          Понятно, отвечу текстом
-        </button>
-      </div>
-    </div>
-
     <!-- Modal Completed -->
     <div class="modal-overlay" id="modalCompleted">
       <div class="modal-card">
-        <div class="modal-icon success">
+        <div class="modal-icon">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
             <polyline points="20 6 9 17 4 12"></polyline>
           </svg>
         </div>
         <h3>Все кейсы разобраны!</h3>
-        <p style="text-align: center;">Вы успешно отработали 4 сложных клиентских возражения по модулю <b>TL: Services (Витрина услуг)</b> и закрепили правильные аргументы без методических ошибок.</p>
+        <p>Вы успешно отработали 4 сложных клиентских возражения по модулю <b>TL: Services (Витрина услуг)</b> и закрепили правильные аргументы без методических ошибок.</p>
         <button class="reset-btn" id="resetBtn">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"></path>
@@ -1159,23 +1098,24 @@
     const typingIndicator = document.getElementById("typingIndicator");
     const modalCompleted = document.getElementById("modalCompleted");
     const resetBtn = document.getElementById("resetBtn");
-    const modalPermission = document.getElementById("modalPermission");
-    const closePermissionModalBtn = document.getElementById("closePermissionModalBtn");
     const toastMsg = document.getElementById("toastMsg");
     const toastText = document.getElementById("toastText");
 
     // Инициализация Web Speech API
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
 
-    function initSpeechEngine() {
-      if (!SpeechRecognition) return null;
+    function initSpeech() {
+      if (!SpeechRecognition) {
+        micBtn.title = "Распознавание речи не поддерживается данным браузером";
+        return;
+      }
 
-      const recognition = new SpeechRecognition();
-      recognition.lang = 'ru-RU';
-      recognition.continuous = true;
-      recognition.interimResults = true;
+      speechRecognitionInstance = new SpeechRecognition();
+      speechRecognitionInstance.lang = 'ru-RU';
+      speechRecognitionInstance.continuous = true;
+      speechRecognitionInstance.interimResults = true;
 
-      recognition.onstart = function() {
+      speechRecognitionInstance.onstart = function() {
         isRecording = true;
         wasVoiceSubmitted = true;
         micBtn.classList.add("recording");
@@ -1186,7 +1126,7 @@
         inputWrapper.classList.add("recording-pulse");
       };
 
-      recognition.onresult = function(event) {
+      speechRecognitionInstance.onresult = function(event) {
         let transcript = "";
         for (let i = 0; i < event.results.length; ++i) {
           transcript += event.results[i][0].transcript;
@@ -1195,64 +1135,35 @@
         updateCharCount();
       };
 
-      recognition.onerror = function(event) {
+      speechRecognitionInstance.onerror = function(event) {
         stopVoiceRecognition();
         if (event.error === 'not-allowed') {
-          showPermissionModal();
+          showToast("Разрешите доступ к микрофону в браузере или введите ответ текстом");
         } else if (event.error !== 'no-speech') {
-          showToast("Ошибка распознавания: " + event.error);
+          showToast("Ошибка микрофона: " + event.error);
         }
       };
 
-      recognition.onend = function() {
+      speechRecognitionInstance.onend = function() {
         stopVoiceRecognition();
       };
-
-      return recognition;
     }
 
-    async function toggleVoiceRecognition() {
-      if (!SpeechRecognition) {
-        showToast("Голосовой ввод не поддерживается данным браузером. Используйте текст.");
+    function toggleVoiceRecognition() {
+      if (!speechRecognitionInstance) {
+        showToast("Распознавание голоса поддерживается в Chrome, Edge, Safari и Яндекс.Браузере");
         userInput.focus();
         return;
       }
 
       if (isRecording) {
-        if (speechRecognitionInstance) {
-          speechRecognitionInstance.stop();
-        }
+        speechRecognitionInstance.stop();
         stopVoiceRecognition();
-        return;
-      }
-
-      // Если страница открыта через file:// браузер блокирует микрофон
-      if (window.location.protocol === 'file:') {
-        showPermissionModal();
-        return;
-      }
-
-      // Явный запрос разрешения через getUserMedia
-      if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+      } else {
         try {
-          const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-          stream.getTracks().forEach(track => track.stop());
-        } catch (err) {
-          showPermissionModal();
-          return;
-        }
-      }
-
-      try {
-        if (!speechRecognitionInstance) {
-          speechRecognitionInstance = initSpeechEngine();
-        }
-        speechRecognitionInstance.start();
-      } catch (e) {
-        if (e.name === 'NotAllowedError') {
-          showPermissionModal();
-        } else {
-          showToast("Ошибка запуска микрофона: " + e.message);
+          speechRecognitionInstance.start();
+        } catch (e) {
+          showToast("Не удалось запустить микрофон: " + e.message);
         }
       }
     }
@@ -1267,10 +1178,6 @@
       if (isWaitingAnswer) {
         inputWrapper.classList.add("active-pulse");
       }
-    }
-
-    function showPermissionModal() {
-      modalPermission.style.display = "flex";
     }
 
     function showToast(text) {
@@ -1473,11 +1380,6 @@
       stopVoiceRecognition();
     });
 
-    closePermissionModalBtn.addEventListener("click", () => {
-      modalPermission.style.display = "none";
-      userInput.focus();
-    });
-
     userInput.addEventListener("keydown", (e) => {
       if (e.key === "Enter" && !e.shiftKey) {
         e.preventDefault();
@@ -1486,14 +1388,14 @@
     });
 
     userInput.addEventListener("input", () => {
-      wasVoiceSubmitted = false;
+      wasVoiceSubmitted = false; // если правит руками
       updateCharCount();
     });
 
     resetBtn.addEventListener("click", resetSimulator);
 
     // Инициализация при загрузке
-    speechRecognitionInstance = initSpeechEngine();
+    initSpeech();
     loadCase(0);
   </script>
 </body>
